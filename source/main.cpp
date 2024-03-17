@@ -1,11 +1,12 @@
 // STL modules
 #include <iostream>
 
-// Library {fmt}
-#include <fmt/format.h>
+// Custom modules
+#include "controller.hpp"
+using namespace kc;
 
 int main()
 {
-    std::cout << fmt::format("Hello, {}!", "Loraine") << '\n';
+    Controller controller;
     return 0;
 }
