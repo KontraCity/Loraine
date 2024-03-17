@@ -8,13 +8,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
 ### --- Executable configuration --- ###
 add_executable(Loraine "source/main.cpp"
+    "source/config.cpp"
     "source/controller.cpp"
 )
 target_include_directories(Loraine PRIVATE "include/")
 
 ### --- Linking configuration --- ###
 find_package(fmt CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 target_link_libraries(Loraine PRIVATE
     fmt::fmt
+    spdlog::spdlog
     "wiringPi"
 )
