@@ -1,12 +1,11 @@
-// STL modules
-#include <iostream>
-
 // Library spdlog
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
 // Custom modules
 #include "config.hpp"
+#include "controller.hpp"
+#include "http_server.hpp"
 using namespace kc;
 
 /// @brief Initialize config
@@ -31,5 +30,7 @@ int main()
     if (!config)
         return 1;
 
-    return 0;
+    Controller::Pointer controller = std::make_shared<Controller>();
+    HttpServer server(config, controller);
+    server.start();
 }

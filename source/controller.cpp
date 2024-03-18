@@ -1,10 +1,17 @@
 #include "controller.hpp"
 
-#include <iostream>
-
 namespace kc {
 
-int Controller::RelayPin(Relay relay)
+void Controller::switchRelay(int pin, bool enable)
+{
+    /*
+    *   Due to sinking current architecture of relay assembly,
+    *   LOW signal enables the relay and HIGH signal disables it.
+    */
+    digitalWrite(pin, (enable ? LOW : HIGH));
+}
+
+int Controller::ControlPin(Relay relay)
 {
     switch (relay)
     {
@@ -27,12 +34,12 @@ int Controller::RelayPin(Relay relay)
     }
 
     throw std::runtime_error(fmt::format(
-        "kc::Controller::RelayPin(): Relay is unknown [relay: {}]",
+        "kc::Controller::ControlPin(): Relay is unknown [relay: {}]",
         static_cast<int>(relay)
     ));
 }
 
-const char* Controller::RelaySmallName(Relay relay)
+const char* Controller::UniqueName(Relay relay)
 {
     switch (relay)
     {
@@ -55,12 +62,12 @@ const char* Controller::RelaySmallName(Relay relay)
     }
 
     throw std::runtime_error(fmt::format(
-        "kc::Controller::RelayShortName(): Relay is unknown [relay: {}]",
+        "kc::Controller::UniqueName(): Relay is unknown [relay: {}]",
         static_cast<int>(relay)
     ));
 }
 
-const char* Controller::RelayName(Relay relay)
+const char* Controller::Name(Relay relay)
 {
     switch (relay)
     {
@@ -83,7 +90,7 @@ const char* Controller::RelayName(Relay relay)
     }
 
     throw std::runtime_error(fmt::format(
-        "kc::Controller::RelayLongName(): Relay is unknown [relay: {}]",
+        "kc::Controller::Name(): Relay is unknown [relay: {}]",
         static_cast<int>(relay)
     ));
 }
@@ -93,8 +100,9 @@ Controller::Controller()
     wiringPiSetupGpio();
     for (Relay relay = Relay::FenceLighting; relay != Relay::MaxRelays; ++relay)
     {
-        pinMode(RelayPin(relay), OUTPUT);
-        digitalWrite(RelayPin(relay), HIGH);
+        int pin = ControlPin(relay);
+        pinMode(pin, OUTPUT);
+        switchRelay(pin, false);
         m_relays.emplace(relay, false);
     }
 }
@@ -102,29 +110,43 @@ Controller::Controller()
 Controller::~Controller()
 {
     for (Relay relay = Relay::FenceLighting; relay != Relay::MaxRelays; ++relay)
-        switchRelay(relay, false);
+        setState(relay, false);
 }
 
-void Controller::switchRelay(Relay relay, bool enabled)
+Controller::State Controller::getState(Relay relay)
 {
-    int relayPin;
-    try
-    {
-        relayPin = RelayPin(relay);
-    }
-    catch (const std::runtime_error&)
+    std::lock_guard lock(m_mutex);
+
+    auto relayEntry = m_relays.find(relay);
+    if (relayEntry == m_relays.end())
     {
         throw std::invalid_argument(fmt::format(
-            "kc::Controller::switchRelay(): Relay is unknown [relay: {}]",
+            "kc::Controller::getState(): Relay is unknown [relay: {}]",
             static_cast<int>(relay)
         ));
     }
 
-    if (m_relays[relay].enabled == enabled)
+    return relayEntry->second;
+}
+
+void Controller::setState(Relay relay, bool enabled)
+{
+    std::lock_guard lock(m_mutex);
+
+    auto relayEntry = m_relays.find(relay);
+    if (relayEntry == m_relays.end())
+    {
+        throw std::invalid_argument(fmt::format(
+            "kc::Controller::setState(): Relay is unknown [relay: {}]",
+            static_cast<int>(relay)
+        ));
+    }
+
+    if (relayEntry->second.enabled == enabled)
         return;
 
-    m_relays[relay].enabled = enabled;
-    digitalWrite(relayPin, (enabled ? LOW : HIGH));
+    relayEntry->second.enabled = enabled;
+    switchRelay(ControlPin(relay), enabled);
 }
 
 Controller::Relay& operator++(Controller::Relay& relay)
