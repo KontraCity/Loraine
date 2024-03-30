@@ -52,6 +52,7 @@ private:
 
 public:
     /// @brief Read and parse configuration file
+    /// @throw kc::Config::Error if reading/parsing error occurs
     Config();
 
     /// @brief Get HTTP server port

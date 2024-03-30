@@ -9,16 +9,16 @@
 using namespace kc;
 
 /// @brief Initialize config
-/// @return Initialized config
+/// @return Initialized config (empty if initialization failed)
 static Config::Pointer Init()
 {
-    spdlog::logger logger("init", std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
     try
     {
         return std::make_shared<Config>();
     }
     catch (const Config::Error& error)
     {
+        spdlog::logger logger("init", std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
         logger.error("Configuration error: {}", error.what());
         return {};
     }
