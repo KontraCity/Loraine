@@ -2,6 +2,7 @@
 
 // STL modules
 #include <memory>
+#include <string>
 #include <fstream>
 #include <stdexcept>
 
@@ -23,11 +24,13 @@ namespace ConfigConst
     namespace Objects
     {
         constexpr const char* HttpPort = "http_port";
+        constexpr const char* I2CPort = "i2c_port";
     }
 
     namespace Defaults
     {
         constexpr uint16_t HttpPort = 80;
+        constexpr const char* I2CPort = "/dev/i2c-1";
     }
 }
 
@@ -49,6 +52,7 @@ public:
 
 private:
     uint16_t m_httpPort;
+    std::string m_i2cPort;
 
 public:
     /// @brief Read and parse configuration file
@@ -60,6 +64,13 @@ public:
     inline uint16_t httpPort() const
     {
         return m_httpPort;
+    }
+
+    /// @brief Get I2C port
+    /// @return I2C port
+    inline const std::string& i2cPort() const
+    {
+        return m_i2cPort;
     }
 };
 

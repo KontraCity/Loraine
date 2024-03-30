@@ -9,8 +9,9 @@
 // Library {fmt}
 #include <fmt/format.h>
 
-// Library WiringPi
-#include <wiringPi.h>
+// Custom modules
+#include "config.hpp"
+#include "i2c.hpp"
 
 namespace kc {
 
@@ -37,18 +38,12 @@ public:
         bool enabled;
     };
 
-private:
-    /// @brief Switch relay
-    /// @param pin Relay control pin
-    /// @param enable Whether or not to enable relay
-    static void switchRelay(int pin, bool enable);
-
 public:
-    /// @brief Get relay's control pin
-    /// @param relay Relay whose control pin to get
+    /// @brief Get relay's control mask
+    /// @param relay Relay whose control mask to get
     /// @throw std::runtime_error if relay is unknown
-    /// @return Relay's control pin
-    static int ControlPin(Relay relay);
+    /// @return Relay's control mask
+    static int ControlMask(Relay relay);
 
     /// @brief Get relay's unique name
     /// @param relay Relay whose unique name to get
@@ -65,10 +60,16 @@ public:
 private:
     std::mutex m_mutex;
     std::map<Relay, State> m_relays;
+    I2C::Device m_driver;
+
+private:
+    /// @brief Switch relays to their states
+    void switchRelays();
 
 public:
     /// @brief Initialize relay controller
-    Controller();
+    /// @param config Initialized config
+    Controller(Config::Pointer config);
 
     ~Controller();
 
@@ -79,9 +80,13 @@ public:
 
     /// @brief Set relay state
     /// @param relay Relay whose state to set
-    /// @throw std::invalid_argument if relay is unknown
     /// @param enabled Whether or not to switch relay to enabled state
+    /// @throw std::invalid_argument if relay is unknown
     void setState(Relay relay, bool enabled);
+
+    /// @brief Set all relays state
+    /// @param enabled Whether or not to switch all relays to enabled state
+    void setAllStates(bool enabled);
 };
 
 /// @brief Increment relay enumerator

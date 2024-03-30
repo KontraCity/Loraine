@@ -2,39 +2,30 @@
 
 namespace kc {
 
-void Controller::switchRelay(int pin, bool enable)
-{
-    /*
-    *   Due to sinking current architecture of relay assembly,
-    *   LOW signal enables the relay and HIGH signal disables it.
-    */
-    digitalWrite(pin, (enable ? LOW : HIGH));
-}
-
-int Controller::ControlPin(Relay relay)
+int Controller::ControlMask(Relay relay)
 {
     switch (relay)
     {
         case Relay::FenceLighting:
-            return 17;
+            return 0b0000'0001;
         case Relay::PathLighting:
-            return 27;
+            return 0b0000'0010;
         case Relay::RightCornerSpotlight:
-            return 22;
+            return 0b0000'0100;
         case Relay::LeftCornerSpotlight:
-            return 10;
+            return 0b0000'1000;
         case Relay::HouseSpotlight:
-            return 24;
+            return 0b0001'0000;
         case Relay::HouseLighting:
-            return 25;
+            return 0b0010'0000;
         case Relay::GarageLighting:
-            return 8;
+            return 0b0100'0000;
         case Relay::Free:
-            return 7;
+            return 0b1000'0000;
     }
 
     throw std::runtime_error(fmt::format(
-        "kc::Controller::ControlPin(): Relay is unknown [relay: {}]",
+        "kc::Controller::ControlMask(): Relay is unknown [relay: {}]",
         static_cast<int>(relay)
     ));
 }
@@ -95,28 +86,37 @@ const char* Controller::Name(Relay relay)
     ));
 }
 
-Controller::Controller()
+void Controller::switchRelays()
 {
-    wiringPiSetupGpio();
+    uint8_t switchState = 0;
     for (Relay relay = Relay::FenceLighting; relay != Relay::MaxRelays; ++relay)
     {
-        int pin = ControlPin(relay);
-        pinMode(pin, OUTPUT);
-        switchRelay(pin, false);
-        m_relays.emplace(relay, false);
+        /*
+        *   Due to sinking current architecture of relay assembly,
+        *   driver's LOW (0) signal enables the relay and HIGH (1) signal disables it.
+        */
+        if (!m_relays[relay].enabled)
+            switchState |= ControlMask(relay);
     }
+    m_driver.send({ switchState });
+}
+
+Controller::Controller(Config::Pointer config)
+    : m_driver(config->i2cPort(), 0x20)
+{
+    for (Relay relay = Relay::FenceLighting; relay != Relay::MaxRelays; ++relay)
+        m_relays.emplace(relay, false);
+    switchRelays();
 }
 
 Controller::~Controller()
 {
-    for (Relay relay = Relay::FenceLighting; relay != Relay::MaxRelays; ++relay)
-        setState(relay, false);
+    setAllStates(false);
 }
 
 Controller::State Controller::getState(Relay relay)
 {
     std::lock_guard lock(m_mutex);
-
     auto relayEntry = m_relays.find(relay);
     if (relayEntry == m_relays.end())
     {
@@ -132,7 +132,6 @@ Controller::State Controller::getState(Relay relay)
 void Controller::setState(Relay relay, bool enabled)
 {
     std::lock_guard lock(m_mutex);
-
     auto relayEntry = m_relays.find(relay);
     if (relayEntry == m_relays.end())
     {
@@ -146,7 +145,15 @@ void Controller::setState(Relay relay, bool enabled)
         return;
 
     relayEntry->second.enabled = enabled;
-    switchRelay(ControlPin(relay), enabled);
+    switchRelays();
+}
+
+void Controller::setAllStates(bool enabled)
+{
+    std::lock_guard lock(m_mutex);
+    for (Relay relay = Relay::FenceLighting; relay != Relay::MaxRelays; ++relay)
+        m_relays[relay].enabled = enabled;
+    switchRelays();
 }
 
 Controller::Relay& operator++(Controller::Relay& relay)

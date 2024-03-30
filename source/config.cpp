@@ -1,24 +1,22 @@
 #include "config.hpp"
+using namespace kc::ConfigConst;
 
 namespace kc {
 
 void Config::GenerateSampleFile()
 {
-    using namespace ConfigConst;
-
     std::ofstream configFile(ConfigFile);
     if (!configFile)
         throw std::runtime_error("kc::Config::GenerateSampleFile(): Couldn't create sample configuration file");
 
     json configJson;
     configJson[Objects::HttpPort] = Defaults::HttpPort;
+    configJson[Objects::I2CPort] = Defaults::I2CPort;
     configFile << configJson.dump(4) << '\n';
 }
 
 Config::Config()
 {
-    using namespace ConfigConst;
-
     std::ifstream configFile(ConfigFile);
     if (!configFile)
         throw Error(fmt::format("Couldn't open configuration file \"{}\"", ConfigFile).c_str());
@@ -27,6 +25,7 @@ Config::Config()
     {
         json configJson = json::parse(configFile);
         m_httpPort = configJson[Objects::HttpPort];
+        m_i2cPort = configJson[Objects::I2CPort];
     }
     catch (const json::exception&)
     {

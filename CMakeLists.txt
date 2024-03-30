@@ -11,6 +11,7 @@ add_executable(Loraine "source/main.cpp"
     "source/config.cpp"
     "source/controller.cpp"
     "source/http_server.cpp"
+    "source/i2c.cpp"
 )
 target_include_directories(Loraine PRIVATE "include/")
 

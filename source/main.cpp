@@ -30,7 +30,7 @@ int main()
     if (!config)
         return 1;
 
-    Controller::Pointer controller = std::make_shared<Controller>();
+    Controller::Pointer controller = std::make_shared<Controller>(config);
     HttpServer server(config, controller);
     server.start();
 }

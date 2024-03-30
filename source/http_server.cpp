@@ -53,8 +53,7 @@ void HttpServer::Connection::postRelays(int indentation)
     try
     {
         json requestJson = json::parse(beast::buffers_to_string(m_request.body().data()));
-        for (Controller::Relay relay = Controller::Relay::FenceLighting; relay != Controller::Relay::MaxRelays; ++relay)
-            m_controller->setState(relay, requestJson["enabled"]);
+        m_controller->setAllStates(requestJson["enabled"]);
 
         json responseJson;
         for (Controller::Relay relay = Controller::Relay::FenceLighting; relay != Controller::Relay::MaxRelays; ++relay)
