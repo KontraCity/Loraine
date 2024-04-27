@@ -30,6 +30,14 @@ public:
         Six,
         Seven,
         Eight,
+        Nine,
+        Ten,
+        Eleven,
+        Twelve,
+        Thirteen,
+        Fourteen,
+        Fifteen,
+        Sixteen,
         MaxRelays,
     };
 
@@ -43,7 +51,7 @@ private:
     /// @param relay Relay whose control mask to get
     /// @throw std::runtime_error if relay is unknown
     /// @return Relay's control mask
-    static int ControlMask(Relay relay);
+    static uint16_t ControlMask(Relay relay);
 
 public:
     /// @brief Get relay's unique name
@@ -61,11 +69,13 @@ public:
 private:
     std::mutex m_mutex;
     std::map<Relay, State> m_relays;
-    I2C::Device m_driver;
+    I2C::Device m_driver1;
+    I2C::Device m_driver2;
 
 private:
     /// @brief Switch relays to their states
-    void switchRelays();
+    /// @param force Whether or not to force state switch
+    void switchRelays(bool force = false);
 
 public:
     /// @brief Initialize relay controller
