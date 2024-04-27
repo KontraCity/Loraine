@@ -22,14 +22,14 @@ public:
 
     enum class Relay
     {
-        FenceLighting,
-        PathLighting,
-        RightCornerSpotlight,
-        LeftCornerSpotlight,
-        HouseSpotlight,
-        HouseLighting,
-        GarageLighting,
-        Free,
+        One,
+        Two,
+        Three,
+        Four,
+        Five,
+        Six,
+        Seven,
+        Eight,
         MaxRelays,
     };
 
@@ -38,13 +38,14 @@ public:
         bool enabled;
     };
 
-public:
+private:
     /// @brief Get relay's control mask
     /// @param relay Relay whose control mask to get
     /// @throw std::runtime_error if relay is unknown
     /// @return Relay's control mask
     static int ControlMask(Relay relay);
 
+public:
     /// @brief Get relay's unique name
     /// @param relay Relay whose unique name to get
     /// @throw std::runtime_error if relay is unknown

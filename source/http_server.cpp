@@ -1,5 +1,4 @@
 #include "http_server.hpp"
-#include <iostream>
 
 namespace kc {
 
@@ -35,7 +34,7 @@ void HttpServer::Connection::methodNotAllowed()
 void HttpServer::Connection::getRelays(int indentation)
 {
     json responseJson;
-    for (Controller::Relay relay = Controller::Relay::FenceLighting; relay != Controller::Relay::MaxRelays; ++relay)
+    for (Controller::Relay relay = Controller::Relay::One; relay != Controller::Relay::MaxRelays; ++relay)
     {
         json stateJson;
         stateJson["enabled"] = m_controller->getState(relay).enabled;
@@ -56,7 +55,7 @@ void HttpServer::Connection::postRelays(int indentation)
         m_controller->setAllStates(requestJson["enabled"]);
 
         json responseJson;
-        for (Controller::Relay relay = Controller::Relay::FenceLighting; relay != Controller::Relay::MaxRelays; ++relay)
+        for (Controller::Relay relay = Controller::Relay::One; relay != Controller::Relay::MaxRelays; ++relay)
         {
             json stateJson;
             stateJson["enabled"] = requestJson["enabled"];
@@ -139,7 +138,7 @@ void HttpServer::Connection::produceResponse()
         return;
     }
 
-    for (Controller::Relay relay = Controller::Relay::FenceLighting; relay != Controller::Relay::MaxRelays; ++relay)
+    for (Controller::Relay relay = Controller::Relay::One; relay != Controller::Relay::MaxRelays; ++relay)
     {
         if (target.resource == fmt::format("/relays/{}", Controller::UniqueName(relay)))
         {

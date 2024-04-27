@@ -6,21 +6,21 @@ int Controller::ControlMask(Relay relay)
 {
     switch (relay)
     {
-        case Relay::FenceLighting:
+        case Relay::One:
             return 0b0000'0001;
-        case Relay::PathLighting:
+        case Relay::Two:
             return 0b0000'0010;
-        case Relay::RightCornerSpotlight:
+        case Relay::Three:
             return 0b0000'0100;
-        case Relay::LeftCornerSpotlight:
+        case Relay::Four:
             return 0b0000'1000;
-        case Relay::HouseSpotlight:
+        case Relay::Five:
             return 0b0001'0000;
-        case Relay::HouseLighting:
+        case Relay::Six:
             return 0b0010'0000;
-        case Relay::GarageLighting:
+        case Relay::Seven:
             return 0b0100'0000;
-        case Relay::Free:
+        case Relay::Eight:
             return 0b1000'0000;
     }
 
@@ -34,22 +34,22 @@ const char* Controller::UniqueName(Relay relay)
 {
     switch (relay)
     {
-        case Relay::FenceLighting:
-            return "fence_lighting";
-        case Relay::PathLighting:
-            return "path_lighting";
-        case Relay::RightCornerSpotlight:
-            return "right_corner_spotlight";
-        case Relay::LeftCornerSpotlight:
-            return "left_corner_spotlight";
-        case Relay::HouseSpotlight:
-            return "house_spotlight";
-        case Relay::HouseLighting:
-            return "house_lighting";
-        case Relay::GarageLighting:
-            return "garage_lighting";
-        case Relay::Free:
-            return "free";
+        case Relay::One:
+            return "one";
+        case Relay::Two:
+            return "two";
+        case Relay::Three:
+            return "three";
+        case Relay::Four:
+            return "four";
+        case Relay::Five:
+            return "five";
+        case Relay::Six:
+            return "six";
+        case Relay::Seven:
+            return "seven";
+        case Relay::Eight:
+            return "eight";
     }
 
     throw std::runtime_error(fmt::format(
@@ -62,22 +62,22 @@ const char* Controller::Name(Relay relay)
 {
     switch (relay)
     {
-        case Relay::FenceLighting:
-            return "Fence lighting";
-        case Relay::PathLighting:
-            return "Path lighting";
-        case Relay::RightCornerSpotlight:
-            return "Right corner spotlight";
-        case Relay::LeftCornerSpotlight:
-            return "Left corner spotlight";
-        case Relay::HouseSpotlight:
-            return "House spotlight";
-        case Relay::HouseLighting:
-            return "House lighting";
-        case Relay::GarageLighting:
-            return "Garage lighting";
-        case Relay::Free:
-            return "Free";
+        case Relay::One:
+            return "Relay one";
+        case Relay::Two:
+            return "Relay two";
+        case Relay::Three:
+            return "Relay three";
+        case Relay::Four:
+            return "Relay four";
+        case Relay::Five:
+            return "Relay five";
+        case Relay::Six:
+            return "Relay six";
+        case Relay::Seven:
+            return "Relay seven";
+        case Relay::Eight:
+            return "Relay eight";
     }
 
     throw std::runtime_error(fmt::format(
@@ -89,7 +89,7 @@ const char* Controller::Name(Relay relay)
 void Controller::switchRelays()
 {
     uint8_t switchState = 0;
-    for (Relay relay = Relay::FenceLighting; relay != Relay::MaxRelays; ++relay)
+    for (Relay relay = Relay::One; relay != Relay::MaxRelays; ++relay)
     {
         /*
         *   Due to sinking current architecture of relay assembly,
@@ -104,7 +104,7 @@ void Controller::switchRelays()
 Controller::Controller(Config::Pointer config)
     : m_driver(config->i2cPort(), 0x20)
 {
-    for (Relay relay = Relay::FenceLighting; relay != Relay::MaxRelays; ++relay)
+    for (Relay relay = Relay::One; relay != Relay::MaxRelays; ++relay)
         m_relays.emplace(relay, false);
     switchRelays();
 }
@@ -151,7 +151,7 @@ void Controller::setState(Relay relay, bool enabled)
 void Controller::setAllStates(bool enabled)
 {
     std::lock_guard lock(m_mutex);
-    for (Relay relay = Relay::FenceLighting; relay != Relay::MaxRelays; ++relay)
+    for (Relay relay = Relay::One; relay != Relay::MaxRelays; ++relay)
         m_relays[relay].enabled = enabled;
     switchRelays();
 }
