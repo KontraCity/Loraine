@@ -18,6 +18,7 @@ namespace kc {
 class Controller
 {
 public:
+    // Shared controller instance pointer
     using Pointer = std::shared_ptr<Controller>;
 
     enum class Relay

@@ -1,8 +1,8 @@
 #pragma once
 
 // STL modules
-#include <memory>
 #include <string>
+#include <memory>
 #include <fstream>
 #include <stdexcept>
 
@@ -19,6 +19,7 @@ using nlohmann::json;
 
 namespace ConfigConst
 {
+    // Loraine configuration JSON file name
     constexpr const char* ConfigFile = "config.json";
 
     namespace Objects
@@ -37,8 +38,10 @@ namespace ConfigConst
 class Config
 {
 public:
+    // Shared config instance pointer
     using Pointer = std::shared_ptr<Config>;
 
+    // Configuration file read/parse error
     class Error : public std::logic_error
     {
     public:

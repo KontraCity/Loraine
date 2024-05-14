@@ -5,10 +5,6 @@
 #include <chrono>
 #include <functional>
 
-// Library spdlog
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-
 // Boost libraries
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
@@ -24,6 +20,7 @@
 // Custom modules
 #include "config.hpp"
 #include "controller.hpp"
+#include "utility.hpp"
 
 namespace kc {
 
@@ -35,9 +32,15 @@ namespace asio = boost::asio;
 class HttpServer
 {
 private:
+    // Shared server logger instance pointer
+    using Logger = std::shared_ptr<spdlog::logger>;
+
     class Connection : public std::enable_shared_from_this<Connection>
     {
     private:
+        // Function used to create connection's log message
+        using LogMessageFunction = std::function<std::string(std::string)>;
+
         struct Target
         {
             std::string resource;
@@ -56,8 +59,8 @@ private:
         static Target ParseTarget(const std::string& target);
 
     private:
-        std::shared_ptr<spdlog::logger> m_logger;
-        std::function<std::string(std::string)> m_logMessage;
+        Logger m_logger;
+        LogMessageFunction m_logMessage;
         Config::Pointer m_config;
         Controller::Pointer m_controller;
         asio::ip::tcp::socket m_socket;
@@ -104,14 +107,14 @@ private:
         /// @param config Initialized config
         /// @param controller Relay controller
         /// @param socket Connection socket
-        Connection(std::shared_ptr<spdlog::logger> logger, Config::Pointer config, Controller::Pointer controller, asio::ip::tcp::socket& socket);
+        Connection(Logger logger, Config::Pointer config, Controller::Pointer controller, asio::ip::tcp::socket& socket);
 
         /// @brief Handle HTTP request
         void handleRequest();
     };
 
 private:
-    std::shared_ptr<spdlog::logger> m_logger;
+    Logger m_logger;
     Config::Pointer m_config;
     Controller::Pointer m_controller;
     boost::asio::io_context m_context;
